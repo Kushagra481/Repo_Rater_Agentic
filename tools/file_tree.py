@@ -5,11 +5,20 @@ IGNORE = {
     ".pytest_cache", ".mypy_cache", "build", "dist", ".idea", ".vscode"
 }
 
-IMPORTANT_NAMES = [
-    "README.md", "requirements.txt", "pyproject.toml", "setup.py",
-    "package.json", "LICENSE", "CITATION.cff", ".env.example",
-    "Dockerfile", "REPO_LAYOUT.md", "USAGE.md",
-    "RECOMMENDED_CODING_STYLE.md"
+IMPORTANT_FILES = [
+    "README.md",
+    "requirements.txt",
+    "pyproject.toml",
+    "setup.py",
+    "package.json",
+    "LICENSE",
+    "CITATION.cff",
+    ".env.example",
+    "Dockerfile",
+    "REPO_LAYOUT.md",
+    "USAGE.md",
+    "CONTRIBUTING.md",
+    "RECOMMENDED_CODING_STYLE.md",
 ]
 
 
@@ -44,24 +53,65 @@ def read_file(path: Path, limit: int = 12000) -> str:
         return ""
 
 
-def important_files(root: Path) -> dict:
+def collect_important_files(root: Path) -> dict:
     files = {}
 
-    for name in IMPORTANT_NAMES:
-        p = root / name
-        if p.exists() and p.is_file():
-            files[name] = read_file(p)
+    for name in IMPORTANT_FILES:
+        path = root / name
+        if path.exists() and path.is_file():
+            files[name] = read_file(path)
 
-    if (root / "tests").exists():
-        files["tests/"] = "Tests directory exists."
-
-    if (root / "docs").exists():
-        files["docs/"] = "Docs directory exists."
-
-    if (root / "csrc").exists():
-        files["csrc/"] = "CUDA/C++ source directory exists."
-
-    if (root / "cula").exists():
-        files["cula/"] = "Python package directory exists."
+    for folder in ["tests", "docs", "src", "app", "csrc", "scripts", "examples"]:
+        if (root / folder).exists() and (root / folder).is_dir():
+            files[f"{folder}/"] = f"{folder} directory exists."
 
     return files
+
+
+def count_extensions(root: Path) -> dict:
+    counts = {}
+
+    for path in root.rglob("*"):
+        if any(part in IGNORE for part in path.parts):
+            continue
+
+        if path.is_file():
+            suffix = path.suffix.lower() or "[no extension]"
+            counts[suffix] = counts.get(suffix, 0) + 1
+
+    return counts
+
+
+def collect_source_stats(root: Path) -> dict:
+    source_extensions = {
+        ".py", ".js", ".ts", ".tsx", ".jsx", ".java", ".cpp", ".c",
+        ".cu", ".h", ".hpp", ".rs", ".go"
+    }
+
+    total_files = 0
+    large_files = []
+    source_files = []
+
+    for path in root.rglob("*"):
+        if any(part in IGNORE for part in path.parts):
+            continue
+
+        if path.is_file() and path.suffix.lower() in source_extensions:
+            total_files += 1
+            source_files.append(str(path.relative_to(root)))
+
+            try:
+                lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+                if len(lines) > 500:
+                    large_files.append({
+                        "file": str(path.relative_to(root)),
+                        "lines": len(lines)
+                    })
+            except Exception:
+                pass
+
+    return {
+        "total_source_files": total_files,
+        "large_files": large_files,
+        "sample_source_files": source_files[:30],
+    }

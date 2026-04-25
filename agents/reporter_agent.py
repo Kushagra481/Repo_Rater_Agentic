@@ -1,26 +1,29 @@
-def bool_icon(value):
+def icon(value):
     return "✅" if value else "❌"
 
 
-def reporter_agent(state):
-    quality = state["quality_report"]
-    readme = state["readme_report"]
-    issues = state["issues"]
+def format_checks(checks):
+    if not checks:
+        return "- No checks available."
 
-    # Format sections separately (IMPORTANT FIX)
-    file_tree_block = "```txt\n" + state["file_tree"] + "\n```"
+    return "\n".join(f"- {icon(v)} {k}" for k, v in checks.items())
 
-    quality_checks = "\n".join(
-        f"- {bool_icon(v)} {k}" for k, v in quality["checks"].items()
-    )
 
-    readme_checks = "\n".join(
-        f"- {bool_icon(v)} {k}" for k, v in readme["checks"].items()
-    )
+def format_list(items):
+    if not items:
+        return "- None"
 
-    issue_text = ""
+    return "\n".join(f"- {item}" for item in items)
+
+
+def format_issues(issues):
+    if not issues:
+        return "- No issues generated."
+
+    text = ""
+
     for i, issue in enumerate(issues, 1):
-        issue_text += (
+        text += (
             f"\n### {i}. {issue['title']}\n\n"
             f"**Priority:** {issue['priority']}  \n"
             f"**Labels:** {', '.join(issue['labels'])}\n\n"
@@ -28,37 +31,67 @@ def reporter_agent(state):
             f"**Suggested Fix:** {issue['fix']}\n"
         )
 
+    return text
+
+
+def reporter_agent(state):
+    structure = state.get("structure_report", {})
+    docs = state.get("docs_report", {})
+    code = state.get("code_report", {})
+    security = state.get("security_report", {})
+    merged = state.get("merged_report", {})
+    issues = state.get("issues", [])
+
+    file_tree_block = "```txt\n" + state.get("file_tree", "") + "\n```"
+
     report = (
-        "# RepoAgent Lite Report\n\n"
+        "# RepoAgent Lite Multi-Agent Report\n\n"
         "## Repository\n\n"
-        f"{state['repo_url']}\n\n"
+        f"{state.get('repo_url', '')}\n\n"
         "---\n\n"
-        "## Overall Quality Score\n\n"
-        f"**{quality['score']}/100**\n\n"
+        "## Final Multi-Agent Score\n\n"
+        f"**{merged.get('overall_score', 0)}/100**\n\n"
         "---\n\n"
-        "## README Score\n\n"
-        f"**{readme['score']}/100**\n\n"
+        "## Detected Project Type\n\n"
+        f"**{structure.get('project_type', 'Unknown')}**\n\n"
+        "---\n\n"
+        "## Agent Scores\n\n"
+        f"- Structure Agent: **{structure.get('score', 0)}/100**\n"
+        f"- Documentation Agent: **{docs.get('score', 0)}/100**\n"
+        f"- Code Agent: **{code.get('score', 0)}/100**\n"
+        f"- Security Agent: **{security.get('score', 0)}/100**\n\n"
         "---\n\n"
         "## File Tree\n\n"
         f"{file_tree_block}\n\n"
         "---\n\n"
-        "## Repository Quality Checks\n\n"
-        f"{quality_checks}\n\n"
+        "## Structure Agent Checks\n\n"
+        f"{format_checks(structure.get('checks', {}))}\n\n"
         "---\n\n"
-        "## README Checks\n\n"
-        f"{readme_checks}\n\n"
+        "## Documentation Agent Checks\n\n"
+        f"{format_checks(docs.get('checks', {}))}\n\n"
         "---\n\n"
-        "## Missing Repository Items\n\n"
-        + ("\n".join("- " + x for x in quality["missing"]) if quality["missing"] else "- None")
-        + "\n\n---\n\n"
-        "## README Suggestions\n\n"
-        + ("\n".join("- " + x for x in readme["suggestions"]) if readme["suggestions"] else "- README looks strong.")
-        + "\n\n---\n\n"
+        "## Code Agent Checks\n\n"
+        f"{format_checks(code.get('checks', {}))}\n\n"
+        "---\n\n"
+        "## Security Agent Checks\n\n"
+        f"{format_checks(security.get('checks', {}))}\n\n"
+        "---\n\n"
+        "## Strengths\n\n"
+        f"{format_list(merged.get('strengths', []))}\n\n"
+        "---\n\n"
+        "## Weaknesses\n\n"
+        f"{format_list(merged.get('weaknesses', []))}\n\n"
+        "---\n\n"
+        "## Recommendations\n\n"
+        f"{format_list(merged.get('recommendations', []))}\n\n"
+        "---\n\n"
         "## GitHub Issue Suggestions\n"
-        f"{issue_text}\n"
+        f"{format_issues(issues)}\n\n"
         "---\n\n"
         "## Final Recommendation\n\n"
-        "Improve onboarding, documentation, and test clarity. Add examples and architecture diagrams for better contributor experience.\n"
+        "This repository was analyzed through a branching multi-agent workflow. "
+        "The best next improvements are documentation clarity, contributor onboarding, "
+        "test instructions, architecture explanation, and security hygiene checks.\n"
     )
 
     return {
