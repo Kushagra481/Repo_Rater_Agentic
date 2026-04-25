@@ -15,13 +15,8 @@ It uses a **branching agent architecture (LangGraph)** where multiple specialize
 ## 🧠 Key Idea
 
 Instead of a single linear pipeline, RepoAgent Lite uses **parallel reasoning agents**:
+<img width="1122" height="1402" alt="image" src="https://github.com/user-attachments/assets/7125de39-8c21-4839-b453-fdf08aacbabd" />
 
-```txt
-<img width="1122" height="1402" alt="image" src="https://github.com/user-attachments/assets/48e01fe5-c18c-404c-bb08-a9d105cf4ad7" />
-
-```
-
----
 
 ## ✨ Features
 
