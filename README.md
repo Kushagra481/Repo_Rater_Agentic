@@ -8,7 +8,7 @@ It uses a **branching agent architecture (LangGraph)** where multiple specialize
 
 ## 🚀 Live Demo
 
-👉 [*Add your Streamlit link here after deployment*](https://reporateragentic-yrubwdcudwsvqhpqufrjdv.streamlit.app/)
+👉 [*LINK*](https://reporateragentic-yrubwdcudwsvqhpqufrjdv.streamlit.app/)
 
 ---
 
@@ -17,29 +17,8 @@ It uses a **branching agent architecture (LangGraph)** where multiple specialize
 Instead of a single linear pipeline, RepoAgent Lite uses **parallel reasoning agents**:
 
 ```txt
-            ┌───────────────┐
-            │ Scanner Agent │
-            └──────┬────────┘
-                   │
-    ┌──────────────┼──────────────┐
-    │              │              │              │
-┌─────────┐  ┌─────────┐  ┌─────────┐  ┌────────────┐
-│Structure│  │ Docs    │  │ Code    │  │ Security   │
-│ Agent   │  │ Agent   │  │ Agent   │  │ Agent      │
-└────┬────┘  └────┬────┘  └────┬────┘  └────┬──────┘
-     └────────────┴────────────┴────────────┘
-                    │
-             ┌────────────┐
-             │ Merge Agent│
-             └────┬───────┘
-                  │
-          ┌──────────────┐
-          │ Planner Agent│
-          └────┬─────────┘
-               │
-        ┌──────────────┐
-        │ Reporter     │
-        └──────────────┘
+<img width="1122" height="1402" alt="image" src="https://github.com/user-attachments/assets/48e01fe5-c18c-404c-bb08-a9d105cf4ad7" />
+
 ```
 
 ---
